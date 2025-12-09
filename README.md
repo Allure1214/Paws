@@ -2,6 +2,10 @@
 
 A playful, swipe-based React app to discover your favorite cats — inspired by dating apps, powered by [Cataas](https://cataas.com).
 
+## 🌐 Live Site
+
+👉 [Visit Paws & Preferences on GitHub Pages](https://allure1214.github.io/Paws/)
+
 ## 🚀 Features
 
 - Swipe right to “like”, left to “dislike” — or tap buttons

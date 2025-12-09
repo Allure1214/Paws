@@ -183,6 +183,12 @@ export default function App() {
               <TopCard key={cat.id} cat={cat} onDecision={onDecision} index={i} />
             ))}
           </div>
+          <div className="footer mobile">
+            Swipe right to like, left to dislike. Tap buttons if you prefer.
+          </div>
+          <div className="footer desktop">
+            Use the Like / Dislike buttons below to choose your cats.
+          </div>
         </>
       ) : (
         <div className="summary">
@@ -224,12 +230,6 @@ export default function App() {
         </button>
       </div>
       )}
-      <div className="footer mobile">
-        Swipe right to like, left to dislike. Tap buttons if you prefer.
-      </div>
-      <div className="footer desktop">
-        Use the Like / Dislike buttons below to choose your cats.
-      </div>
     </div>
   );
 }

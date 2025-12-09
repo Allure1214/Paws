@@ -12,7 +12,8 @@ A playful, swipe-based React app to discover your favorite cats — inspired by 
 - Mobile-first design with smooth animations
 - Summary of liked cats at the end
 - Fresh cat images every time you restart
-- Floating reset button for convenience
+- Loading spinner for slow images
+- Summary view with collapsible liked cats
 - Optional light/dark theme toggle
 
 ## 📸 Powered by
@@ -30,13 +31,6 @@ A playful, swipe-based React app to discover your favorite cats — inspired by 
 - Touch gestures with resistance and rotation
 - Fast image preloading
 - Safe-area padding for modern phones
-
-## 🧑‍🎨 Customization
-
-You can easily:
-- Change number of cats shown
-- Add filters or tags from Cataas
-- Enable theme switching (light/dark)
 
 ## 🚀 Getting Started
 

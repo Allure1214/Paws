@@ -42,12 +42,27 @@ function TopCard({
   const cardRef = useRef<HTMLDivElement | null>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
   const current = useRef<{ x: number; y: number } | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  let animatingOut = false;
+
+  const flingOut = (dir: SwipeDecision) => {
+    const el = cardRef.current;
+    if (!el || animatingOut) return;
+    animatingOut = true;
+    if (dir === 'like') {
+      el.classList.add('swipe-right');
+    } else {
+      el.classList.add('swipe-left');
+    }
+    setTimeout(() => {
+      el.classList.remove('swipe-right', 'swipe-left');
+      onDecision(dir);
+    }, 350);
+  };
 
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
-
-    let animatingOut = false;
 
     const onTouchStart = (e: TouchEvent) => {
       const t = e.touches[0];
@@ -59,28 +74,10 @@ function TopCard({
       if (!start.current) return;
       const t = e.touches[0];
       current.current = { x: t.clientX, y: t.clientY };
-
       const dx = current.current.x - start.current.x;
       const dy = current.current.y - start.current.y * 0.2;
       const rot = Math.max(-12, Math.min(12, dx / 12));
       el.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${rot}deg)`;
-
-      const likeBadge = el.querySelector<HTMLDivElement>('.badge.like');
-      const dislikeBadge = el.querySelector<HTMLDivElement>('.badge.dislike');
-      const intensity = Math.min(1, Math.abs(dx) / 120);
-      if (likeBadge && dislikeBadge) {
-        likeBadge.style.opacity = dx > 0 ? `${intensity}` : '0';
-        dislikeBadge.style.opacity = dx < 0 ? `${intensity}` : '0';
-      }
-    };
-
-    const flingOut = (dir: SwipeDecision) => {
-      if (animatingOut) return;
-      animatingOut = true;
-      const offX = dir === 'like' ? window.innerWidth : -window.innerWidth;
-      el.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
-      el.style.transform = `translate3d(${offX}px, -40px, 0) rotate(${dir === 'like' ? 20 : -20}deg)`;
-      setTimeout(() => onDecision(dir), 200);
     };
 
     const onTouchEnd = () => {
@@ -89,7 +86,6 @@ function TopCard({
       const threshold = 120;
       if (dx > threshold) return flingOut('like');
       if (dx < -threshold) return flingOut('dislike');
-
       el.style.transition = 'transform 160ms ease';
       el.style.transform = 'translate3d(0,0,0)';
       setTimeout(() => { el.style.transition = ''; }, 160);
@@ -109,15 +105,21 @@ function TopCard({
   }, [onDecision]);
 
   const handleButton = (dir: SwipeDecision) => {
-    onDecision(dir);
+    flingOut(dir);
   };
 
-  
   const zIndex = 100 - index;
 
   return (
     <div className="card" ref={cardRef} style={{ zIndex }} aria-label={cat.alt}>
-      <img src={cat.url} alt={cat.alt} loading="eager" />
+      {!loaded && <div className="loader">🐾 Loading...</div>}
+      <img
+        src={cat.url}
+        alt={cat.alt}
+        loading="eager"
+        onLoad={() => setLoaded(true)}
+        style={{ display: loaded ? 'block' : 'none' }}
+      />
       <div className="gradient" />
       <div className="badge like">LIKE</div>
       <div className="badge dislike">NOPE</div>
@@ -135,6 +137,8 @@ export default function App() {
   const [liked, setLiked] = useState<string[]>([]);
   const [disliked, setDisliked] = useState<string[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [collapsed, setCollapsed] = useState(true);
+
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -168,7 +172,7 @@ export default function App() {
     <div className="app">
       <div className="header">Paws & Preferences
         <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-          {theme === 'dark' ? '🌞 Light Theme' : '🌙 Dark Theme'}
+          {theme === 'dark' ? '🌞 Switch to Light' : '🌙 Switch to Dark'}
         </button>
       </div>
       {index < cats.length ? (
@@ -182,19 +186,51 @@ export default function App() {
         </>
       ) : (
         <div className="summary">
-          <h2>You liked {liked.length} out of {cats.length}</h2>
-          <div className="grid">
-            {likedCats.map(c => (
-              <img key={c.id} src={c.url} alt={c.alt} loading="lazy" />
-            ))}
-          </div>
+        <h2>You liked {liked.length} out of {cats.length}</h2>
+
+        <div className="grid">
+          {(collapsed && likedCats.length > 4 ? likedCats.slice(0, 4) : likedCats).map(c => (
+            <img key={c.id} src={c.url} alt={c.alt} loading="lazy" />
+          ))}
         </div>
+
+        {likedCats.length > 6 && (
+          <button
+            className="button"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            {collapsed ? 'Show all liked cats' : 'Collapse list'}
+          </button>
+        )}
+
+        <button className="button" onClick={reset}>Start over</button>
+        <button
+          className="button"
+          onClick={() => {
+            const likedList = likedCats.map(c => c.alt).join(', ');
+            if (navigator.share) {
+              navigator.share({
+                title: 'My favorite cats',
+                text: `I liked ${likedCats.length} cats: ${likedList}`,
+                url: window.location.href,
+              });
+            } else {
+              navigator.clipboard.writeText(`I liked ${likedCats.length} cats: ${likedList}`);
+              alert('Summary copied to clipboard!');
+            }
+          }}
+        >
+          Share summary
+        </button>
+      </div>
       )}
-      {/* Floating reset button */}
-      {index >= cats.length && (
-        <button className="reset-button" onClick={reset}>↻</button>
-      )}
-      <div className="footer">Swipe right to like, left to dislike. Tap buttons if you prefer.</div>
+      <div className="footer mobile">
+        Swipe right to like, left to dislike. Tap buttons if you prefer.
+      </div>
+      <div className="footer desktop">
+        Use the Like / Dislike buttons below to choose your cats.
+      </div>
     </div>
   );
 }
+

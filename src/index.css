@@ -91,11 +91,40 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI
 .button.like { background: color-mix(in srgb, var(--like) 28%, #1a1f2b); }
 .button.dislike { background: color-mix(in srgb, var(--dislike) 28%, #1a1f2b); }
 
+.button.like {
+  background: #2ecc71;
+  color: #fff; /* white text */
+}
+
+.button.dislike {
+  background: #e74c3c;
+  color: #fff; /* white text */
+}
+
 .footer {
   margin-top: 8px;
-  opacity: 0.75;
   font-size: 13px;
+  opacity: 0.75;
 }
+
+/* Hide swipe instructions on desktop */
+.footer.mobile {
+  display: block;
+}
+
+.footer.desktop {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .footer.mobile {
+    display: none;
+  }
+  .footer.desktop {
+    display: block;
+  }
+}
+
 
 .summary {
   width: 100%;
@@ -164,9 +193,53 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI
   overflow: hidden;
   transform: translate3d(0,0,0);
   will-change: transform;
+  transition: opacity 0.3s ease;
 }
 
-/* Only apply shadow in dark theme */
-:root[data-theme='dark'] .card {
-  box-shadow: 0 12px 24px rgba(0,0,0,0.35);
+.card.exiting {
+  opacity: 0;
+}
+
+.loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  opacity: 0.6;
+}
+
+@keyframes swipe-left {
+  0% { transform: translate3d(0,0,0) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(-120%, -40px, 0) rotate(-20deg); opacity: 0; }
+}
+
+@keyframes swipe-right {
+  0% { transform: translate3d(0,0,0) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(120%, -40px, 0) rotate(20deg); opacity: 0; }
+}
+
+.card.swipe-left {
+  animation: swipe-left 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.card.swipe-right {
+  animation: swipe-right 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.theme-toggle {
+  margin-left: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--accent);
+  color: #fff;
 }

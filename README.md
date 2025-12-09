@@ -34,8 +34,20 @@ You can easily:
 - Add filters or tags from Cataas
 - Enable theme switching (light/dark)
 
-## 🧪 Local Dev
+## 🚀 Getting Started
+
+Clone the repo and install dependencies:
 
 ```bash
+git clone https://github.com/allure1214/Paws.git
+cd Paws
 npm install
+
+Run locally:
 npm run dev
+
+Build for production:
+npm run build
+
+Deploy to GitHub Pages:
+npm run deploy

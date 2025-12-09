@@ -135,7 +135,7 @@ export default function App() {
   const [cats, setCats] = useState<CatItem[]>(generateCats());
   const [index, setIndex] = useState(0);
   const [liked, setLiked] = useState<string[]>([]);
-  const [disliked, setDisliked] = useState<string[]>([]);
+  const [, setDisliked] = useState<string[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [collapsed, setCollapsed] = useState(true);
 

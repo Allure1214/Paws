@@ -138,7 +138,7 @@ export default function App() {
   const [, setDisliked] = useState<string[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [collapsed, setCollapsed] = useState(true);
-
+  const [selectedCat, setSelectedCat] = useState<CatItem | null>(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -168,6 +168,26 @@ export default function App() {
     [liked, cats]
   );
 
+  // ESC + Arrow key navigation for modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedCat) return;
+      if (e.key === 'Escape') {
+        setSelectedCat(null);
+      }
+      if (e.key === 'ArrowRight') {
+        const idx = likedCats.findIndex(c => c.id === selectedCat.id);
+        if (idx < likedCats.length - 1) setSelectedCat(likedCats[idx + 1]);
+      }
+      if (e.key === 'ArrowLeft') {
+        const idx = likedCats.findIndex(c => c.id === selectedCat.id);
+        if (idx > 0) setSelectedCat(likedCats[idx - 1]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedCat, likedCats]);
+
   return (
     <div className="app">
       <div className="header">Paws & Preferences
@@ -186,51 +206,54 @@ export default function App() {
           <div className="footer mobile">
             Swipe right to like, left to dislike. Tap buttons if you prefer.
           </div>
-          <div className="footer desktop">
+                    <div className="footer desktop">
             Use the Like / Dislike buttons below to choose your cats.
           </div>
         </>
       ) : (
         <div className="summary">
-        <h2>You liked {liked.length} out of {cats.length}</h2>
+          <h2>You liked {liked.length} out of {cats.length}</h2>
 
-        <div className="grid">
-          {(collapsed && likedCats.length > 4 ? likedCats.slice(0, 4) : likedCats).map(c => (
-            <img key={c.id} src={c.url} alt={c.alt} loading="lazy" />
-          ))}
+          <div className="grid">
+            {(collapsed && likedCats.length > 4 ? likedCats.slice(0, 4) : likedCats).map(c => (
+              <div key={c.id} className="cat-card">
+                <img
+                  src={c.url}
+                  alt={c.alt}
+                  loading="lazy"
+                  onClick={() => setSelectedCat(c)} // open modal
+                  style={{ cursor: 'pointer' }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {likedCats.length > 6 && (
+            <button
+              className="button"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              {collapsed ? 'Show all liked cats' : 'Collapse list'}
+            </button>
+          )}
+
+          <button className="button" onClick={reset}>Start over</button>
         </div>
+      )}
 
-        {likedCats.length > 6 && (
-          <button
-            className="button"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            {collapsed ? 'Show all liked cats' : 'Collapse list'}
-          </button>
-        )}
-
-        <button className="button" onClick={reset}>Start over</button>
-        <button
-          className="button"
-          onClick={() => {
-            const likedList = likedCats.map(c => c.alt).join(', ');
-            if (navigator.share) {
-              navigator.share({
-                title: 'My favorite cats',
-                text: `I liked ${likedCats.length} cats: ${likedList}`,
-                url: window.location.href,
-              });
-            } else {
-              navigator.clipboard.writeText(`I liked ${likedCats.length} cats: ${likedList}`);
-              alert('Summary copied to clipboard!');
-            }
-          }}
-        >
-          Share summary
-        </button>
-      </div>
+      {/* Modal for selected cat */}
+      {selectedCat && (
+        <div className="modal-overlay" onClick={() => setSelectedCat(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-content">
+              <img src={selectedCat.url} alt={selectedCat.alt} />
+            </div>
+            <div className="modal-actions">
+              <button className="button" onClick={() => setSelectedCat(null)}>Close</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 }
-
